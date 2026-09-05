@@ -1,0 +1,121 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(scripts/sdd/*)",
+      "Bash(scripts/setup.sh)",
+      "Bash(npm *)",
+      "Bash(pnpm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(bun *)",
+      "Bash(deno *)",
+      "Bash(tsc *)",
+      "Bash(uv *)",
+      "Bash(python3 *)",
+      "Bash(pytest *)",
+      "Bash(go *)",
+      "Bash(cargo *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git rev-parse *)",
+      "Bash(git init)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(date *)",
+      "Bash(wc *)",
+      "Bash(tree *)",
+      "Bash(chmod +x *)",
+      "Bash(bash scripts/setup.sh)",
+      "Bash(bash scripts/sdd/*)",
+      "Bash(brew install jq)",
+      "Bash(apt install jq)",
+      "Bash(apt-get install *)",
+      "Bash(echo * > .sdd/active-spec)",
+      "Bash(cp .specs/*)",
+      "Bash(./scripts/sdd/*)",
+      "Bash(bash .claude/hooks/*)",
+      "Bash(grep *)",
+      "Bash(sort *)",
+      "Bash(tail *)",
+      "Bash(head *)",
+      "Bash(xargs *)",
+      "Bash(basename *)",
+      "Bash(uniq *)",
+      "Bash(find *)",
+      "Bash(cp -r .specs/*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./**/*.pem)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git commit * --no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git commit * -n *)",
+      "Bash(git add -A*)",
+      "Bash(git add --all*)",
+      "Bash(git add .)",
+      "Bash(git add . *)",
+      "Bash(git add -u*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git add ./*)",
+      "Bash(git add * .)",
+      "Bash(git add -- .)",
+      "Bash(git add :/*)",
+      "Bash(git commit -n*)",
+      "Bash(git commit * -n)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git reset * --hard*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-edit-guard.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-spec-edit.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-check.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
