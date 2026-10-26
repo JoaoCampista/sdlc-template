@@ -6,6 +6,9 @@ parent: PROD-001
 version: 0.1.0
 status: draft
 risk_tier: limited
+data_classification: internal
+slo: {}
+issue: none
 owners: [<time>]
 deps: []
 related_adrs: []

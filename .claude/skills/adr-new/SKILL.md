@@ -15,6 +15,6 @@ Hoje: !`date +%Y-%m-%d`
    - Nova → próximo número (3 dígitos), `ADR-NNN-<slug>.md` a partir de `.specs/adr/ADR-000-template.md`.
 2. Escreva Contexto sem citar “o código já depende disso” (Regra 3). Liste ≥2 alternativas reais e por que perderam.
 3. Em Consequências, registre honestamente o que se PERDE. Em Fences, diga qual teste/hook/ratchet impede regressão silenciosa.
-4. `status: in_review`. **Gate G2:** peça o aceite ao humano (se ele disse “siga sem parar”, considere aceito) → `status: accepted`.
+4. `status: in_review`. **Gate G2:** use a autorização explícita existente para a decisão; se ausente, apresente alternativas e solicite aceite. Registre a origem do aceite antes de `status: accepted`. Não pergunte de novo por autorização já concedida no mesmo escopo.
 5. Atualize `related_adrs` das specs afetadas. Se tocar stack: primeiro preenchimento de §2 (ADR-002) = bump `minor` da Constitution; troca posterior = ADR-v2 + bump `major` (§9).
 6. `scripts/sdd/spec-lint.sh <adr>`; `scripts/sdd/spec-index.sh`. Commit: `docs(adr): ADR-NNN — <título>`.

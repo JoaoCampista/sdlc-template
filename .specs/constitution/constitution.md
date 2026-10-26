@@ -3,11 +3,12 @@ id: CONST-001
 kind: constitution
 title: Constitution — camada de governança computável
 parent: none
-version: 1.0.0
-status: approved
-owners: [ceia]
-last_updated: 2026-09-05
+version: 1.1.0
+status: in_review
+owners: [maintainers]
+last_updated: 2026-10-26
 status_history:
+  - { version: 1.1.0, status: in_review, date: 2026-10-26, note: "evolução do template solicitada pelo mantenedor; contratos de tooling, design e evidência; stack segue pendente" }
   - { version: 1.0.0, status: approved, date: 2026-09-05, note: "adoção do método SDD (ADR-001); stack a definir no bootstrap" }
 ---
 
@@ -18,11 +19,11 @@ Tudo o que estiver aqui é regra; o linter, os hooks e o agente devem cobrá-las
 ## §1 Princípios diretores (não-negociáveis; em conflito, o de número menor vence)
 
 1. **Spec antes de código.** Nenhuma mudança não-trivial entra sem spec correspondente em `.specs/`.
-   Enforcement: hook `PreToolUse` bloqueia edição de código sem `.sdd/active-spec`; trailer `Spec-Hash` no commit; `spec-drift` em pre-commit/pre-push (e no CI, a criar no F-SETUP).
+   Enforcement: hook `PreToolUse` bloqueia edição de código sem `.sdd/active-spec`; trailer `Spec-Hash` no commit; `spec-drift` em pre-commit/pre-push (e no CI do template; o produto amplia no F-SETUP).
 2. **Humano decide o irreversível.** ADR, emenda desta Constitution, deleção de dados, merge e deploy exigem aprovação humana explícita, registrada.
 3. **Auditável por construção.** Toda decisão relevante deixa rastro: ADR, `status_history`, postmortem, trailer de commit. Faltar rastro é falha.
 4. **Determinismo onde possível, LLM onde necessário.** Verificações determinísticas (testes, lint, hooks, hashes) precedem julgamento de modelo.
-5. **Forma humana, parsing máquina.** Specs, planos, ADRs e postmortems são Markdown legível; validação usa frontmatter YAML, nunca regex sobre prosa livre.
+5. **Forma humana, parsing máquina.** Specs, planos, ADRs e postmortems são Markdown legível; validação estrutural usa o subconjunto de frontmatter dos templates e seções/ACs explícitas. O lint não é parser YAML geral nem revisão semântica.
 
 ## §2 Stack canônica
 
@@ -33,7 +34,7 @@ Tudo o que estiver aqui é regra; o linter, os hooks e o agente devem cobrá-las
 | Persistência | a definir no bootstrap | ADR-002 (pendente) |
 | Testes / lint | a definir no bootstrap | ADR-002 (pendente) |
 
-Preencher esta tabela pela primeira vez (ADR-002, no bootstrap) é bump `minor` (1.0.0 → 1.1.0), aprovado no gate G2. Trocar uma linha depois disso exige ADR-v2 (`supersedes`) e bump `major`.
+Preencher esta tabela pela primeira vez (ADR-002, no bootstrap) é bump `minor` da versão corrente, aprovado no gate G2. Trocar uma linha depois disso exige ADR-v2 (`supersedes`) e bump `major`.
 
 ## §3 NFRs default (ISO 25010), herdados por toda Feature Spec salvo override justificado em ADR
 
@@ -61,7 +62,7 @@ Cada bump ganha entrada em `status_history` e bloco `## Changelog` ao final.
 Constitution (CONST-001)
   ├── Design System (DS-0N, parent CONST-001) — meta-camada: COMO se escreve código (§14)
   └── Product Spec (PROD-001)
-       ├── Feature Spec (F-*) ── PLAN-F-*, TASKS-F-*, RISK-F-*
+       ├── Feature Spec (F-*) ── PLAN-F-*, TASKS-F-*, RISK-F-*, DESIGN-F-*
        └── Component Spec (C-*) ── PLAN-C-*, RISK-C-*   (parent: F-* ou C-*)
 ADRs — transversais · Postmortems — via parent, fora do índice
 ```
@@ -77,4 +78,9 @@ com uma linha por regra apontando lint/fronteira/hook/ratchet — o lint rejeita
 entrega a semente DS-00 (arquitetura/fronteiras), DS-06 (testes) e DS-07 (nomes). Ver Regra 13 em AGENTS.md.
 
 ## Changelog
+- 1.1.0 (2026-10-26): design por estado, escopo do parsing explícito e tooling validado por snapshot; stack permanece em aberto.
 - 1.0.0 (2026-09-05): versão inicial (§1–§13 + §14 Design System).
+
+## §15 Evidência e limites do tooling
+
+UI tem design por estado e evidência persistente; aceite final não é inferido de build verde. Guards são controles de processo, não sandbox. Conteúdo staged e revisões enviadas são a entrada dos checks Git. Testes do próprio mecanismo vivem em scripts/tests/.

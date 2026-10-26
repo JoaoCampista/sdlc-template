@@ -9,3 +9,9 @@ CLAUDE.local.md
 .DS_Store
 .sdd/
 .claude/agent-memory-local/
+
+.env.*
+!.env.example
+*.pem
+.claude/worktrees/
+.claude/agent-memory/

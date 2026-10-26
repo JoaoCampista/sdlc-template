@@ -8,7 +8,7 @@ status: draft
 last_updated: <YYYY-MM-DD>
 ---
 
-# Riscos (≥3, quantificados; risco fechado ganha lápide, não é apagado)
+# Riscos (reais, avaliados; risco fechado ganha lápide, não é apagado)
 
 | ID | Sev | Risco | Mitigação | Status |
 |---|---|---|---|---|
