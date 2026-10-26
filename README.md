@@ -1,44 +1,58 @@
-# Template spec-driven para Claude Code (CEIA)
+# SDLC Template — spec antes de código
 
-Repositório vazio de código, cheio de método: o `ai-4sdlc-platform` (CEIA/UFG) portado para qualquer linguagem.
-**Spec antes de código, ADR para decisão, postmortem no fechamento, hooks que obrigam.** A stack é a primeira
-decisão registrada (ADR-002), não uma premissa do template.
+Base de templates, instruções e verificações para iniciar projetos com desenvolvimento dirigido por especificação (SDD). Evolui o método do ai-4sdlc-platform (CEIA/UFG) com aprendizados do uso no Spectrolite, sem herdar sua stack ou seu produto.
 
 ## Começar
+
+Use **Use this template** no GitHub, ou copie o conteúdo para um novo repositório. Para estudar/manter esta base:
+
 ```bash
-claude   # só isso. O CLAUDE.md manda o Claude rodar `bash scripts/setup.sh` (git init, hooks, índice, commit inicial; requer jq)
+git clone https://github.com/JoaoCampista/sdlc-template.git
+cd sdlc-template
+bash scripts/setup.sh
+make check
+claude
 ```
-Descreva o case em linguagem de produto. O CLAUDE.md conduz:
 
-**Bootstrap** — product-spec → **G0 você aprova o produto** → ADR-002 (stack, ≥2 alternativas) → **G2 você aceita** →
-Constitution §2 atualizada → F-SETUP-V1 (esqueleto + 1 teste verde + lint) → **G1 você aprova** → código liberado →
-semente do Design System (DS-00 arquitetura/fronteiras, DS-06 testes, DS-07 nomes, cada regra com enforcement) →
-postmortem do setup.
+Requer Bash 3.2+, Git, jq e Python 3.9+ (biblioteca padrão; sem instalar pacotes Python). `make` facilita os comandos. macOS e Linux são os alvos do tooling; Windows/WSL não foi validado nesta evolução.
 
-**Cada feature** — `/spec-new` (spec/plan/tasks/risks) → **G1** → `/adr-new` se houver decisão → **G2** → TDD por AC
-com commits `Spec-Hash` → `spec-reviewer` → validação → `/postmortem` com “Spec gap identificado” → resumo.
+Para criar um produto, descreva o caso. O fluxo define produto → stack por ADR-002 → esqueleto → features. Configure identidade e remoto do **seu** projeto antes de commitar/publicar. Setup não configura identidade, instala dependências, cria commits, limpa trabalho local nem troca remotos.
 
-Diga “siga sem parar” para pré-aprovar os gates.
+## O que vem na base
 
-## Estrutura
+| Caminho | Uso |
+|---|---|
+| .specs/features/_TEMPLATE/ | spec, plan, tasks, risks e **design.md** por estado |
+| .specs/components/_TEMPLATE/ | Contratos internos com ciclo próprio |
+| .specs/adr/ e constitution/ | Decisões e invariantes; stack continua em aberto |
+| .specs/design-system/ | Convenções de engenharia com enforcement; não é biblioteca visual pronta |
+| .specs/postmortems/ | Aprendizados com evidência, spec gap e pendências |
+| .claude/hooks/ | Sessão, guard de edição, guard Bash, pós-edição e Stop |
+| .claude/rules/, skills/, agents/ | Regras por caminho, comandos de trabalho e revisor somente leitura |
+| scripts/sdd/ | Índice determinístico, lint, drift e Git hooks que conferem stage/revisão enviada |
+| scripts/tests/ | Regressões herméticas com repositórios temporários |
+| docs/templates/ | Handoff e relatório de revisão reutilizáveis |
+
+F-SDD-TOOLING-V1 é a spec das ferramentas distribuídas, não uma feature do seu produto; mantenha-a enquanto usar esse tooling. O PROD-001 ainda precisa do bootstrap. `.sdd/active-spec` e configurações locais são ignorados pelo Git.
+
+## Uso diário
+
+```bash
+make doctor  # ambiente e instalação
+make sdd     # depois de mudar specs: lint + gerar índice + drift
+make check   # validação sem regenerar o que está sendo validado
 ```
-CLAUDE.md                 contexto: bootstrap, fluxo da feature, playbooks, regras duras
-AGENTS.md                 a lei: Regras 0–13, anti-padrões
-.specs/
-  constitution/           princípios não-negociáveis, §2 stack (preenchida por ADR-002), regras computáveis, emendas
-  product/                PROD-001 (esqueleto; preenchido no bootstrap)
-  features/_TEMPLATE/     spec.md · plan.md · tasks.md · risks.md
-  components/_TEMPLATE/   spec.md · plan.md · risks.md
-  design-system/          meta-camada: COMO se escreve código aqui (DS-00 arquitetura · DS-06 testes · DS-07 nomes · DS-05 erros…); semente no F-SETUP, cresce por gatilho; toda regra com enforcement
-  adr/                    ADR-000-template · ADR-001-adotar-sdd
-  postmortems/_TEMPLATE.md
-  index.json              gerado por scripts/sdd/spec-index.sh (hash de cada spec)
-.claude/
-  settings.json           hooks: SessionStart · PreToolUse (nega código sem spec) · PostToolUse (lint + index) · Stop
-  rules/                  specs.md · adr.md · design-system.md · tests.md (carregam por caminho)
-  skills/                 /spec-new · /adr-new · /ds-new · /postmortem · /sdd-reconcile · /sdd-status
-  agents/spec-reviewer.md revisor adversarial: diff × ACs × ADRs
-.sdd/active-spec          feature ativa (estado de sessão; lida pelos hooks; não versionado)
-scripts/sdd/              spec-index · spec-drift · spec-lint · spec-lint-all · install-git-hooks + git hooks (Conventional Commits, trailer Spec-Hash)
-```
-Escape consciente para mudança trivial já coberta: `SDD_ALLOW_TRIVIAL=1` (fica no histórico do shell).
+
+Fluxo: `/spec-new` → contrato e decisões → implementação por AC → testes → revisão → `/postmortem`. UI tem design.md, referência por estado e evidência visual persistente. Specs passam de draft para in_review para implementar; approved é aceite final registrado.
+
+Os hooks automáticos são configurados para Claude Code. Codex e outros clientes usam AGENTS.md, comandos e Git hooks; não presuma que carreguem .claude/settings.json. Guard Bash é uma ajuda ao processo, **não uma sandbox**.
+
+## Guias
+
+- [Adoção e atualização de projetos existentes](docs/adoption.md)
+- [Práticas encontradas: origem, generalização e limites](docs/learned-practices.md)
+- [Hooks: cobertura, teste de disparo e limitações](docs/hooks.md)
+- [Design, estados e evidências](docs/design.md)
+- [Padrões opcionais por tipo de projeto](docs/optional-patterns.md)
+
+A CI executa make check em Linux e macOS. Ela valida o template; cada produto acrescenta build, testes e integração próprios. Verificação estrutural ou hash consistente não prova que todas as ACs foram implementadas.

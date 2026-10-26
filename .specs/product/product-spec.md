@@ -5,8 +5,9 @@ title: Produto a definir no bootstrap
 parent: CONST-001
 version: 0.0.1
 status: draft
+bootstrap: pending
 risk_tier: limited
-owners: [ceia]
+owners: [maintainers]
 last_updated: 2026-09-05
 spec_hash: pending
 status_history:

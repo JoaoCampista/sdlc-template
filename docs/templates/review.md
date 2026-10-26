@@ -1,0 +1,13 @@
+# Revisão adversarial — modelo
+
+Commit/base/diff: … · Spec/versão: … · Escopo verificado: …
+
+| Gravidade | Arquivo:linha | Cenário reproduzível | Esperado (AC/ADR/DS) | Observado | Correção sugerida |
+|---|---|---|---|---|---|
+
+Verificações executadas e saída relevante: …
+Verificações não executadas e motivo: …
+Contraprova do conserto (mesma família de defeito, entrada alternativa, concorrência): …
+Veredito: APROVAR / APROVAR COM RESSALVAS / BLOQUEAR.
+
+Não inferir qualidade da contagem de testes. Arquivo novo não rastreado também entra na revisão; conferir git status além de git diff.

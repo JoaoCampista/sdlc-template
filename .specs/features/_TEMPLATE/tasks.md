@@ -8,8 +8,12 @@ status: draft
 last_updated: <YYYY-MM-DD>
 ---
 
-# Tarefas (toda task aponta para 1+ AC; task sem AC = super-decomposição)
+# Tarefas
 
-| ID | Descrição | AC | Status |
-|---|---|---|---|
-| T-001 | <…> | AC-1 | todo |
+Uma task por comportamento ou grupo coeso. Toda task referencia AC; dependências formam uma ordem executável. A célula Status começa pelo estado real: todo, doing, blocked, done ou deferred. Um plano ou relato de agente não prova conclusão.
+
+| ID | Descrição | AC | Depende de | Arquivos / responsável | Status | Evidência executada |
+|---|---|---|---|---|---|---|
+| T-001 | <comportamento> | AC-1 | nenhuma | <paths / papel> | todo | <teste / resultado / captura> |
+
+Antes de done: confira o diff, existência dos símbolos/arquivos e o resultado real. Uma tarefa parcialmente implementada fica doing; diferimento tem motivo, dono e tracking. Atualize esta tabela no commit da AC.

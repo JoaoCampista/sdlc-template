@@ -1,14 +1,16 @@
 ---
 paths:
-  - "tests/**"
-  - "**/*.test.*"
-  - "**/*_test.*"
-  - "**/test_*"
-  - "**/*.spec.*"
-  - "test/**"
-  - "__tests__/**"
+  - "**/tests/**"
+  - "**/Tests/**"
+  - "**/*test*"
+  - "**/*Test*"
 ---
-# Ao editar testes
-- Cada teste nasce de uma AC e a cita no nome ou docstring (`AC-3`). Teste sem AC referenciada = super-decomposição.
-- Nunca altere um teste existente para fazê-lo passar. Se a AC estava errada, corrija a AC primeiro (playbook Bug do CLAUDE.md) e só então o teste.
-- Teste primeiro, confirme que falha pelo motivo certo, implemente. Não use `skip`/`xfail` sem razão de domínio no comentário (Regra 8).
+# Ao trabalhar com testes
+
+- Teste comportamento da AC, incluindo erro/limite. Não teste só formato de texto quando o efeito é executável.
+- Padrão hermético: fixtures temporárias, sem rede/contas/serviços reais. Integração tem comando separado, destino de teste validado e recursos dimensionados.
+- Dublê de CLI/SDK reproduz as recusas, exit codes e respostas que o código trata. Não aceite tudo silenciosamente.
+- Para proteção crítica, retire a proteção em uma cópia e confirme que a regressão falha. Teste positivo também deve passar, evitando “bloqueia tudo”.
+- JSON de hook: confira status, parsing e exatamente um objeto. Erro de parsing não é ausência de bloqueio.
+- Nunca mude teste apenas para fazê-lo passar. Se o contrato mudou, atualize a AC primeiro e explique.
+- Template: make test. Não altere Git/identidade/ambiente do projeto real em fixtures. Nada de sleeps arbitrários para sincronização.

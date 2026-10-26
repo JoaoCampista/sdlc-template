@@ -1,0 +1,55 @@
+{
+  "artifacts": [
+    {
+      "id": "ADR-001",
+      "path": ".specs/adr/ADR-001-adotar-sdd.md",
+      "kind": "adr",
+      "status": "accepted"
+    },
+    {
+      "id": "CONST-001",
+      "path": ".specs/constitution/constitution.md",
+      "kind": "constitution",
+      "status": "in_review"
+    },
+    {
+      "id": "PLAN-F-SDD-TOOLING-V1",
+      "path": ".specs/features/F-SDD-TOOLING-V1/plan.md",
+      "kind": "plan",
+      "status": "in_review"
+    },
+    {
+      "id": "RISK-F-SDD-TOOLING-V1",
+      "path": ".specs/features/F-SDD-TOOLING-V1/risks.md",
+      "kind": "risks",
+      "status": "in_review"
+    },
+    {
+      "id": "F-SDD-TOOLING-V1",
+      "path": ".specs/features/F-SDD-TOOLING-V1/spec.md",
+      "kind": "feature_spec",
+      "status": "in_review"
+    },
+    {
+      "id": "TASKS-F-SDD-TOOLING-V1",
+      "path": ".specs/features/F-SDD-TOOLING-V1/tasks.md",
+      "kind": "tasks",
+      "status": "in_review"
+    },
+    {
+      "id": "PROD-001",
+      "path": ".specs/product/product-spec.md",
+      "kind": "product_spec",
+      "status": "draft"
+    }
+  ],
+  "hashes": {
+    "ADR-001": "0634a899a99fa9b19687ca751a9dbba66fbdba12664463a1eddf7aeabebe4803",
+    "CONST-001": "dc0c322afe265f5a383779dffff19b6dcd60b169e7d2f1d890fd5c71fe1145fa",
+    "PLAN-F-SDD-TOOLING-V1": "9e18b952591bb058fac8a361ec5aa902cdc2492761c52e3f07e113e5f699540d",
+    "RISK-F-SDD-TOOLING-V1": "b7ad3041d6656ddbf2c1347bf335b1e323eee2365fd43e9cff76f63a814c2ac9",
+    "F-SDD-TOOLING-V1": "63fed5ac9d2766b6cbaa4dabe7d20bb618629efbf5b24f1bee9ad75b39fdec79",
+    "TASKS-F-SDD-TOOLING-V1": "7bf8d690ecf4f9d66d7cb5c2372dd73438e861ac05296f61905a182c28119b9a",
+    "PROD-001": "64d66f6697ad9fae81cc0e9b84678a8555a558489da3f6d40e506a4b4ee8753f"
+  }
+}

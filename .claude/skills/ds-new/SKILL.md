@@ -16,3 +16,5 @@ Hoje: !`date +%Y-%m-%d`
 5. `related_adrs` com a ADR que motivou (ADR-002 stack, ou a decisão específica). Desvio de DS existente não se resolve editando o DS: exige ADR.
 6. `scripts/sdd/spec-lint.sh <doc>` → `scripts/sdd/spec-index.sh`. Um único commit com doc + fence: `docs(ds): DS-0N — <tema> (+ fence)`.
 7. Se for um tipo de trabalho novo, adicione uma linha à tabela “Leitura obrigatória por tipo de trabalho” em `.specs/design-system/README.md`.
+
+Não copie DS de stack alheia como lei deste projeto. Design de tela é design.md; tokens/biblioteca visual têm fonte própria. Para controle crítico, a contraprova deve falhar ao remover o controle numa cópia.

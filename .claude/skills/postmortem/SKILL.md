@@ -13,5 +13,7 @@ Hoje: !`date +%Y-%m-%d`
 2. §1 TL;DR em 3 linhas (+ Timeline se incident/smoke). §2 o que funcionou. §3 cada problema com Sintoma / Root cause / Evidência (path) / Fix / Impacto / Detecção.
 3. §4 métricas com baseline e delta reais (recalcule; não copie). §5 lições — cada uma com fix concreto: ADR, Regra em AGENTS.md ou hook. Inclua **Spec gap identificado** (e o PR de spec) e **Convenção descoberta** (algo que “sempre fazemos” sem DS → `/ds-new`, ou “nenhuma”); sem isto o loop SDD não fecha.
 4. §6 pendências com owner e prazo, ou `nenhuma` explícito. §7 paths de evidência — **confirme que existem antes de escrever**.
-5. Se houve “burrice” nova, adicione uma linha na tabela de anti-padrões de `AGENTS.md`; padrão bom ganha `✓ POSITIVO`.
+5. Registre o aprendizado e sua prevenção no postmortem; atualize `docs/learned-practices.md` se for prática reutilizável, com evidência e limites.
 6. Commit: `docs(postmortem): <id> — <kind> (<data>)`.
+
+Separe medição própria de relato de terceiros. Registre testes não executados e diferenças entre inspeção visual e interação. Evidências têm commit/build e caminhos persistentes; plano de agente não prova conclusão.
