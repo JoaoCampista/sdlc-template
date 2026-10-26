@@ -105,6 +105,7 @@ class Tooling(RepoCase):
         self.git('commit', '-qm', 'feat: valid stage')
         import hashlib
         self.assertIn(hashlib.sha256(original.encode()).hexdigest(), self.git('log', '-1', '--format=%B').stdout)
+        self.assertEqual(self.git('log', '-1', '--format=%s').stdout.strip(), 'feat: valid stage')
 
     def test_amend_refreshes_hash_preserves_refs(self):
         """AC-6: no stale hash on amend; task refs survive."""
@@ -117,6 +118,10 @@ class Tooling(RepoCase):
         self.assertEqual(message.count('Spec-Hash:'), 1)
         self.assertNotIn('sha256:old', message)
         self.assertIn('AC-1 T-001', message)
+        self.assertEqual(self.git('log', '-1', '--format=%s').stdout.strip(), 'feat: revised')
+        trailers = self.git('interpret-trailers', '--parse', data=message).stdout
+        self.assertIn('Refs: F-EXAMPLE-V1 AC-1 T-001', trailers)
+        self.assertIn('Spec-Hash:', trailers)
 
     def test_staged_validator_and_missing_spec_fail(self):
         """AC-6: use the staged validator, and fail if active spec absent from stage."""

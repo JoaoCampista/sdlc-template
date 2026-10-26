@@ -27,6 +27,9 @@ Extrair práticas de um projeto real para uma base sem stack, sem editar o proje
 - PostToolUse recebendo array JSON retornava erro não bloqueante. Fix: validar schema e normalizar falha inesperada para exit 2 nos wrappers.
 - Path.resolve com ciclo difere entre versões Python. Fix: recusar symlink ainda não resolvido, inclusive com spec ativa; não depender só da exceção de uma versão.
 
+- Primeiro commit real revelou falta de linha em branco antes de Refs; o título absorvia o trailer. Fix: bloco de trailers separado, preservando Refs; teste usa git interpret-trailers e confere o assunto.
+- CI inicial encontrou Ubuntu 26.04 sem pacote Python 3.9; macOS executou check com sucesso. Fix: fixar Ubuntu 24.04, disponível no manifesto oficial, e não cancelar a outra plataforma por fail-fast.
+
 ## §4. Métricas
 Medições locais desta entrega, não contagens normativas: make check passou com 24 testes; make test-mutations detectou 4 alterações deliberadamente erradas em cópias temporárias (guard removido, JSON inválido, índice com timestamp, stage sem validação); setup repetido e make doctor passaram. Suíte inicial: 18/19 antes da correção de schema; cobertura cresceu com os achados reais.
 

@@ -173,10 +173,13 @@ def prepare(message, source=''):
         raise ValueError('spec ativa ausente do stage; não é possível vincular o commit')
     target = Path(message)
     # Replace only the managed hash, preserving user Refs such as task and AC IDs.
-    lines = [line for line in target.read_text().splitlines() if not line.startswith('Spec-Hash:')]
-    if not any(line.startswith('Refs:') and identifier in line.split() for line in lines):
-        lines.append(f'Refs: {identifier}')
-    target.write_text('\n'.join(lines).rstrip() + f'\n\nSpec-Hash: sha256:{sha(content)}\n')
+    lines = target.read_text().splitlines()
+    refs = [line for line in lines if line.startswith('Refs:')]
+    body = [line for line in lines if not line.startswith(('Spec-Hash:', 'Refs:'))]
+    if not any(identifier in line.split() for line in refs):
+        refs.append(f'Refs: {identifier}')
+    trailers = refs + [f'Spec-Hash: sha256:{sha(content)}']
+    target.write_text('\n'.join(body).rstrip() + '\n\n' + '\n'.join(trailers) + '\n')
 
 
 def prepush():
