@@ -69,6 +69,26 @@ class Harness(RepoCase):
         for command in (held, 'docker compose down -v', 'psql -c "DROP TABLE users"', 'echo x > .claude/settings.json', 'cp a .claude/hooks/guard.py'):
             self.assertEqual(self.bash(command), 'deny', command)
         self.assertIsNone(self.edit('.claude/hooks/guard.py'))
+        # The auto-approval log names the program, never the command text (it may carry a credential).
+        self.assertIsNone(self.bash('PGPASSWORD=hunter2-prod python3 x.py --token ghp.short/abc'))
+        logged = (self.root / '.sdd/auto-aprovado.log').read_text()
+        self.assertNotIn('hunter2', logged); self.assertNotIn('ghp.short', logged); self.assertIn('\tpython3\t', logged)
+        # A construct the guard cannot read never turns a deny or a hold into a pass.
+        for command in ('git reset --hard $(true)', 'git add -A $(true)', 'git commit --no-verify -m "$(echo x)"', 'SDD_ALLOW_TRIVIAL=1 echo `true`',
+                        'echo x > .claude/deploy-stage.json; env true', 'echo x > .claude/hooks/guard.py; cd a b', 'echo x > .claude/hooks/guard.py $(true)',
+                        'psql -c "DROP TABLE t" ${DB}', 'echo x > src/app.py $(true)', 'rm -rf .claude', 'mv .claude ../x', 'mv scripts ../x',
+                        'git rev-parse HEAD > .sdd/governance-head', 'printf sha=x > .sdd/check-verdict', 'make check | tee /dev/null | tail'):
+            self.assertEqual(self.bash(command), 'deny', command)
+        self.assertEqual(self.bash('echo x > .claude/hooks/guard.py $(true)', agent_type='produto'), 'deny')
+        self.assertEqual(self.bash('bash scripts/sdd/governance-sync.sh ack ok', agent_type='produto'), 'deny')
+        self.assertIsNone(self.bash('bash scripts/sdd/governance-sync.sh ack ok'))
+        self.assertEqual(self.edit('.sdd/roles/arquiteto-head'), 'deny')
+        self.assertIsNone(self.edit('.sdd/active-spec'))
+        self.assertIsNone(self.bash('echo $(date) 2>/dev/null'))
+        self.assertIsNone(self.bash('echo F-EXAMPLE-V1 > .sdd/active-spec'))
+        self.activate()
+        self.assertIsNone(self.bash('echo x > src/app.py $(true)'))  # with an active spec, only logged
+        self.assertEqual(self.bash('rm -rf .claude'), 'deny')
         # Changing the stage always goes to the human, by Edit and by the shell.
         self.assertEqual(self.edit('.claude/deploy-stage.json'), 'ask')
         self.assertEqual(self.bash('echo x > .claude/deploy-stage.json'), 'deny')
@@ -94,7 +114,10 @@ class Harness(RepoCase):
         self.assertEqual(red.returncode, 3)
         self.assertIn('FAIL: test_x', red.stdout)
         self.assertIn('VERMELHO (exit 3; falharam: test_x)', show())
+        self.run_script('scripts/sdd/check-verdict.sh', 'run', 'true')
+        self.assertIn('verde no HEAD', show())
         (self.root / 'tests/example.py').write_text('changed\n')
+        self.assertIn('a árvore mudou depois', show())  # a green verdict does not vouch for later edits
         self.run_script('scripts/sdd/check-verdict.sh', 'run', 'true')
         self.assertIn(f'sha={head}-suja', (self.root / '.sdd/check-verdict').read_text())
         self.assertIn('ainda não tem veredito', show())
@@ -144,7 +167,8 @@ class Harness(RepoCase):
         self.assertEqual(decision(asked), 'deny')
         self.assertIn('não implementa ask', asked.stdout)
         self.assertEqual(json.loads(self.codex('PreToolUse', dict(tool_name='Bash', tool_input=dict(command='git status --short'))).stdout), {})
-        for body in ('*** Begin Patch\n*** End Patch\n', code + 'trailing\n', '*** Begin Patch\n*** Update File: a.md\n*** End Patch\n', 'garbage'):
+        for body in ('*** Begin Patch\n*** Add File:  .claude/settings.json\n+x\n*** End Patch\n', '*** Begin Patch\n*** Add File: ~/x\n+x\n*** End Patch\n',
+                     '*** Begin Patch\n*** End Patch\n', code + 'trailing\n', '*** Begin Patch\n*** Update File: a.md\n*** End Patch\n', 'garbage'):
             self.assertEqual(self.codex('PreToolUse', patch(body), ok=False).returncode, 2, body)
         self.assertEqual(self.codex('PostToolUse', patch(docs), ok=False).returncode, 2)
         self.assertEqual(self.codex('PreToolUse', dict(tool_name='Other', tool_input=dict(command='x')), ok=False).returncode, 2)

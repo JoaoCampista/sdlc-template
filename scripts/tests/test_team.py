@@ -140,6 +140,11 @@ class Team(RepoCase):
         (self.root / '.claude/harness.json').write_text('{broken')
         self.assertIn('NÃO CONFERIDOS', self.stop('role-check.sh')[0])
         self.assertEqual(self.agent('PreToolUse', 'arquiteto', call='toolu_6').returncode, 0)  # the mark never blocks
+        # A git that cannot be read is accused by the three checks, never green by omission.
+        (self.root / '.git/HEAD').write_text('garbage\n')
+        for script in ('governance-check.sh', 'role-check.sh', 'infra-check.sh'):
+            self.assertIn('NÃO CONFER', self.stop(script)[0], script)
+            self.assertEqual(self.stop(script, active=True)[0], '')
 
     def test_committed_iac_blocks_once_until_applied_or_acknowledged(self):
         """AC-13: no mark or IaC after the mark blocks; the same finding blocks once; ack and mark clear it."""
@@ -245,8 +250,13 @@ class Team(RepoCase):
         self.run_script('scripts/sdd/git-pre-push.sh', data=f'refs/heads/main {record} refs/heads/main {base}\n')
         # A commit that cites no task, or another feature without tasks.md, is not held.
         (self.root / 'tests/example.py').write_text('# two\n')
-        other = self.commit('fix(app): typo (F-OTHER-V1 T-009); refs F-EXAMPLE-V1', 'tests')
+        other = self.commit('fix(app): typo (F-OTHER-V1 T-009)\n\nRefs: F-EXAMPLE-V1', 'tests')
         self.assertEqual(self.push(record, other).returncode, 0)
+        # The feature as the commit scope, or after the task, on the same line: still a citation.
+        for count, message in enumerate(('feat(F-EXAMPLE-V1): works (AC-1) T-001', 'feat(app): closes T-001 of F-EXAMPLE-V1')):
+            (self.root / 'tests/example.py').write_text(f'# form {count}\n')
+            cited = self.commit(message, 'tests')
+            self.assertEqual(self.push(other, cited).returncode, 1, message)
         self.assertEqual(self.push(base, 'no-such-commit').returncode, 1)
 
     def test_git_hooks_run_through_the_logging_runner(self):

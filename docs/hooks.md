@@ -50,6 +50,7 @@ O script de apply do projeto chama `bash scripts/sdd/infra-sync.sh mark PASTA` d
 - Hooks de .claude não são instalados automaticamente no Codex ou em outro cliente; o adaptador do Codex é opcional. Nenhum adaptador de MCP da stack é presumido.
 - As travas do Stop comparam caminhos e marcas, não o conteúdo do desenho: chamar o subagente avança a marca mesmo que ele erre. O "conferido" registra o motivo, não o prova.
 - A identificação de subagente depende de agent_id/agent_type no payload do cliente, e a cópia de mutação do revisor depende de scratchpad_dir; sem esses campos o guard nega a mais, nunca a menos, no revisor, mas trata a chamada como sessão principal nos demais.
+- O spec-reviewer "só lê" por guard apenas em Edit/Write; pelo Bash vale o guard Bash comum e o texto do agente.
 - O estágio de desenvolvimento troca pergunta por registro: é para ambiente sem dado real. O guard não sabe o que há no ambiente.
 - A validação executa scripts versionados do snapshot. Como CI/testes normais, não é isolamento para código hostil; revise mudanças nos próprios validators.
 - Git hook local pode ser contornado por uma pessoa. CI e revisão do PR também importam.

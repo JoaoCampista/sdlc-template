@@ -367,6 +367,8 @@ def describe():
     state = 'verde' if code == '0' else f"VERMELHO (exit {code}; falharam: {data.get('failed') or 'sem a lista'})"
     when, sha = data.get('when', '?'), data.get('sha', '')
     if sha and sha == head:
+        if not tree_is_clean():
+            return f'o último make check ({when}) está {state} no HEAD ({head}), mas a árvore mudou depois', False
         return f'o último make check ({when}) está {state} no HEAD ({head})', code == '0'
     return f"o último make check ({when}) está {state} em {sha or 'commit desconhecido'}, e o HEAD ({head or 'desconhecido'}) ainda não tem veredito", False
 

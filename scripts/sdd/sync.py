@@ -25,8 +25,15 @@ def text_git(*args):
 
 
 def head():
+    """The HEAD commit; '' only for a readable repository with no commit yet. A git that cannot be read raises."""
     result = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', '-q', 'HEAD'], capture_output=True, text=True)
-    return result.stdout.strip() if result.returncode == 0 else ''
+    if result.returncode == 0:
+        return result.stdout.strip()
+    unborn = subprocess.run(['git', '-C', str(ROOT), 'symbolic-ref', '-q', 'HEAD'], capture_output=True, text=True)
+    listed = subprocess.run(['git', '-C', str(ROOT), 'rev-list', '-n', '1', '--all'], capture_output=True, text=True)
+    if unborn.returncode == 0 and listed.returncode == 0 and not listed.stdout.strip():
+        return ''
+    raise ValueError('o Git não leu o HEAD deste repositório')
 
 
 def valid_mark(mark, tip):
@@ -308,7 +315,12 @@ def task_sync(base, tip):
         if all(name.startswith('.specs/') for name in files):
             continue  # the record itself
         message = text_git('log', '-1', '--format=%B', commit)
-        for feature in sorted({match.group(1) for match in re.finditer(rf'({FID})[^;)]*?T-[0-9]{{3}}', message)}):
+        # The feature and a task on the same line, in any order (the F-ID is often the commit scope).
+        cited = set()
+        for line in message.splitlines():
+            if re.search(r'\bT-[0-9]{3}\b', line):
+                cited.update(re.findall(rf'\b{FID}\b', line))
+        for feature in sorted(cited):
             tasks = f'.specs/features/{feature}/tasks.md'
             if text_git('ls-tree', '--name-only', tip, '--', tasks).strip() != tasks:
                 continue  # a feature without tasks.md has no status to keep

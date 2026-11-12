@@ -52,13 +52,13 @@ def patch_paths(text):
                 ended = True
                 continue
             path = line.split(': ', 1)[1]
-            if not path or any(ord(char) < 32 or ord(char) == 127 for char in path):
+            if not path or path != path.strip() or path.startswith('~') or any(ord(char) < 32 or ord(char) == 127 for char in path):
                 raise Refused('caminho de patch inválido')
             paths.append(path)
             state, body, moved = header.lower(), 0, False
         elif line.startswith('*** Move to: '):
             path = line.split(': ', 1)[1]
-            if state != 'update' or body or moved or not path or any(ord(char) < 32 for char in path):
+            if state != 'update' or body or moved or not path or path != path.strip() or path.startswith('~') or any(ord(char) < 32 for char in path):
                 raise Refused('move fora da atualização ou destino inválido')
             paths.append(path)
             moved = True

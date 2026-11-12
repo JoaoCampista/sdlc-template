@@ -21,6 +21,9 @@ CASES = [
     ('reviewer hard link', '.claude/hooks/team.py', "        if real.is_file() and real.stat().st_nlink > 1:", "        if False:", 'test_team.Team.test_reviewer_writes_only_memory_and_mutation_copy'),
     ('message guard', '.claude/hooks/team.py', "    if caller(payload) and str(", "    if False and str(", 'test_team.Team.test_subagent_cannot_edit_enforcement_or_message_others'),
     ('task sync', 'scripts/sdd/sync.py', "            if tasks not in touched:", "            if False:", 'test_team.Team.test_code_that_cites_a_task_goes_up_with_tasks_md'),
+    ('opaque construct hides a hold', '.claude/hooks/guard.py', "    return decision('ask', reason + (' O texto cita operação destrutiva, enforcement ou escrita sem spec ativa.' if hold else ''), hold=hold)", "    return decision('ask', reason)", 'test_harness.Harness.test_stage_decides_what_asked_the_human'),
+    ('state files are free', '.claude/hooks/guard.py', "    if kind == 'state':", "    if False:", 'test_harness.Harness.test_stage_decides_what_asked_the_human'),
+    ('unreadable git is green', 'scripts/sdd/sync.py', "    raise ValueError('o Git não leu o HEAD deste repositório')", "    return ''", 'test_team.Team.test_role_paths_block_until_the_role_agent_ran'),
     ('codex ask stays ask', 'scripts/sdd/codex.py', "    if specific['permissionDecision'] == 'ask':", "    if False:", 'test_harness.Harness.test_codex_adapter_translates_and_refuses'),
 ]
 for name, file, before, after, test in CASES:

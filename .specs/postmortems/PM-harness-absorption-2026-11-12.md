@@ -27,7 +27,7 @@ Pedido do mantenedor em 2026-11-12: absorver todo o conceito do harness do proje
 - A sessão desta entrega não tinha os hooks do template carregados (aberta fora da raiz dele): as regras foram seguidas à mão e parte dos arquivos foi editada por script, não por Edit/Write. Lint, índice e drift rodaram depois, pelo make sdd.
 
 ## §4. Métricas
-Medições desta data, não normativas: make check verde com 43 testes; make test-mutations detectou 14 alterações erradas deliberadas (4 anteriores e 10 novas). Uma rodada de revisão adversarial somente leitura; o resultado está em §5.
+Medições desta data, não normativas: depois das correções da revisão, make check verde com 43 testes; make test-mutations detectou 17 alterações erradas deliberadas (4 anteriores e 13 novas). Uma rodada de revisão adversarial somente leitura; o resultado está em §5.
 
 ## §5. Lições
 - **Spec gap identificado:** a v0.1.0 tratava "pergunta ao humano" como única saída para o que o guard não avalia; faltava dizer quem decide quando ninguém está olhando. A AC-10 fixa o estágio. Faltava também dizer que o enforcement tem dono (AC-14) e que registro atrasado é defeito cobrado (AC-12, AC-13, AC-15).
@@ -35,7 +35,11 @@ Medições desta data, não normativas: make check verde com 43 testes; make tes
 - A revisão adversarial desta rodada: ver "Revisão" abaixo.
 
 ### Revisão
-(preenchido depois da rodada)
+Uma rodada do spec-reviewer sobre o commit c1a9579, com veredito BLOQUEAR: um achado alto e cinco médios, todos reproduzidos por ele e corrigidos no commit seguinte, com teste e contraprova.
+- Alto: no estágio de desenvolvimento, um comando com construção que o guard não lê (substituição, wrapper, cd dinâmico) saía como pergunta comum e passava, escondendo negação ou operação do humano do mesmo comando. Agora o texto cru é varrido pelas mesmas famílias antes de responder.
+- Médios: pasta-mãe do enforcement classificada como código; travas novas do Stop verdes com Git ilegível; marcas e veredito de .sdd escrevíveis por qualquer um e "conferido" por subagente; registro de auto-aprovação com o comando em claro; task-sync cego para o F-ID no escopo do commit.
+- Baixos corrigidos: conselho de log que o guard negava, tee para /dev/null, caminho de patch com espaço ou til, veredito verde com árvore mudada depois, limite do revisor pelo Bash documentado.
+- Não houve segunda rodada de revisão: as correções têm teste, mas não foram revistas por terceiro.
 
 ## §6. Pendências
 - Mantenedor: smoke dos hooks novos no Claude Code real (SessionStart com o bloco novo; negação a subagente no enforcement; SendMessage de subagente; a marca de papel num Agent de verdade; o scratchpad_dir do revisor). Os testes provam os scripts, não o disparo nem o payload do cliente.

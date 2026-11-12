@@ -236,12 +236,14 @@ def main():
     payload = json.load(sys.stdin)
     if not isinstance(payload, dict):
         raise ValueError('entrada deve ser objeto JSON')
-    if mode == 'stop-governance':
-        stop_governance(payload)
-    elif mode == 'stop-roles':
-        stop_roles(payload)
-    elif mode == 'stop-infra':
-        stop_infra(payload)
+    stops = {'stop-governance': stop_governance, 'stop-roles': stop_roles, 'stop-infra': stop_infra}
+    if mode in stops:
+        if not isinstance(payload.get('stop_hook_active', False), bool):
+            raise ValueError('stop_hook_active deve ser booleano')
+        try:
+            stops[mode](payload)
+        except ERRORS as exc:  # what the check cannot read is accused once, never green by omission
+            answer(payload, [f'TRAVA NÃO CONFERIDA ({mode}): {exc} — conserte o repositório Git ou a configuração e pare de novo.'])
     elif mode == 'role-mark':
         role_mark(payload)
     elif mode == 'message-guard':
