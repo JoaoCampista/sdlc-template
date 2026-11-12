@@ -72,6 +72,33 @@ Há evidência útil para contratos compartilhados, exemplos de contrato imutáv
 
 A existência de um teste ou postmortem no Spectrolite não equivale a prova atual de todos os caminhos. Parte dos controles é heurística; algumas revisões de acessibilidade na origem usaram capturas/árvores sem exercitar tecnologia assistiva. A adaptação exige dizer isso explicitamente. O teste automatizado do script também não prova que Claude Code o carregou: o smoke do cliente real segue sendo verificação de adoção.
 
+## Segunda leitura (2026-11-12)
+
+Pedido do mantenedor: levar o conceito inteiro do harness, não só as práticas. Projeto observado no HEAD `7242ec233b36f37e57c0bc198b24c9611143e7c7`, só lido; nenhum arquivo dele foi executado ou editado. O que entrou é reescrita genérica em Python, com testes próprios em scripts/tests/; nenhum script de origem foi copiado.
+
+| Conceito na origem | Evidência na origem | O que entrou aqui |
+|---|---|---|
+| Todo hook por um runner que registra a rodada | .claude/hooks/_run.sh, scripts/sdd/git-hook-run.sh, harness-report.sh | _run.sh + scripts/sdd/harness.py; `make harness`; teste que acusa hook fora do runner |
+| Estágio que decide o que pergunta ao humano | .claude/deploy-stage.json, bash-guard.sh | Mesmo arquivo e valores; ausente por padrão; o que fica com o humano é negado com o motivo, o resto é registrado |
+| Enforcement só pela sessão principal | pre-edit-guard.sh | Subagente e outro cliente negados; em beta a sessão principal ainda confirma |
+| Rodada longa com a saída num arquivo; veredito do check | bash-guard.sh, scripts/dev/check-verdict.sh | Negação do alvo longo num pipe sem tee; .sdd/check-verdict mostrado na sessão |
+| Três níveis de verificação e travas da junção | AGENTS Regra 10, scripts/dev/junction-check.sh | Regra 10; `make junction-check` com a lista de travas em harness.json |
+| Documentos de cima acompanham o trabalho | governance-check.sh, governance-sync.sh | Trava do Stop com marca e "conferido" registrado; aviso R4 na edição |
+| O desenho acompanha o código | arch-check.sh, design-check.sh, arquiteto-mark.sh | Uma trava por papel configurado (roles), com a marca só do pedido que rodou |
+| O aplicado acompanha a IaC | infra-check.sh, infra-sync.sh | Raízes configuráveis; bloqueia uma vez por achado |
+| Tasks sobem com o código | task-sync.sh no pre-push | Igual, com o formato de ID do template |
+| Subagente só fala com a sessão principal; revisor só escreve na memória | subagent-message-guard.sh, spec-reviewer-guard.sh | Os dois guards, pelo caminho real |
+| Papéis de produto, design, arquitetura e jurídico | .claude/agents/ | Quatro agentes sem ferramenta, nuvem, lei ou marca fixas |
+| Time paralelo com pedido-modelo e tabela de riscos | docs/time-paralelo-frente.md | docs/parallel-team.md |
+| Auditor em outro cliente, com os mesmos guards | scripts/sdd/codex-hook.sh, install-codex-hooks.sh | Adaptador opcional; protocolo em docs/team.md |
+| Painel do registro | make painel | Versão de texto, só leitura |
+
+Mudou em relação à primeira leitura: "revisão depois da publicação" e a edição do enforcement sem pergunta deixaram de ser descartadas como circunstância; entram como opção governada pelo estágio e pelo ritmo que o projeto escolher. A CI segue ativa na base.
+
+Continuou fora: o guard de shell da origem (milhares de linhas presas à nuvem, ao banco, à IDE e ao deploy dela), os adaptadores da IDE, os scripts de frente de banco, as caixas de recado em pastas pessoais, os modelos fixados por agente, as travas de DS do produto e o painel em HTML. O princípio de cada um está nos guias; a implementação nasce com a stack.
+
+Limites desta leitura: os testes provam os scripts com fixtures, não o disparo no cliente. A identificação de subagente (agent_id, agent_type), o scratchpad do revisor e o adaptador do Codex dependem do payload real do cliente, visto na origem e não reexercitado aqui.
+
 ## Organização das instruções em .claude
 
 A leitura das skills de design e desenvolvimento e das regras por camada também mostrou práticas reutilizáveis:

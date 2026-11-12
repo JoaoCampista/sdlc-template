@@ -189,11 +189,15 @@ def prepush():
         fields = line.split()
         if len(fields) != 4:
             raise ValueError('pre-push: protocolo inválido')
-        _, local_oid, _, _ = fields
+        _, local_oid, _, remote_oid = fields
         if set(local_oid) == {'0'} or local_oid in seen:
             continue
         seen.add(local_oid)
         validate_tree(local_oid)
+        # Code that cites a task goes up with that feature's tasks.md (Regra 12.8). A new ref: commits no remote has.
+        import sync
+        if sync.task_sync('--novos' if set(remote_oid) == {'0'} else remote_oid, local_oid):
+            raise ValueError('pre-push: o status das tasks não acompanha o código que sobe')
 
 
 def install_hooks():
@@ -209,7 +213,7 @@ def install_hooks():
     generated = {}
     for hook, script in pairs.items():
         path = hookdir / hook
-        body = f'#!/usr/bin/env bash\n# sdd-template managed hook\nR=$(git rev-parse --show-toplevel) || exit 1\nexport CLAUDE_PROJECT_DIR="$R"\nexec bash "$R/scripts/sdd/{script}" "$@"\n'
+        body = f'#!/usr/bin/env bash\n# sdd-template managed hook\nR=$(git rev-parse --show-toplevel) || exit 1\nexport CLAUDE_PROJECT_DIR="$R"\nexec bash "$R/scripts/sdd/git-hook-run.sh" {hook} {script} "$@"\n'
         if path.exists() or path.is_symlink():
             old = path.read_text()
             legacy = '#!/usr/bin/env bash\nR=$(git rev-parse --show-toplevel)\nexec bash "$R/scripts/sdd/'
@@ -238,6 +242,11 @@ def session():
             for pm in (ROOT / '.specs/postmortems').glob('PM-*.md'):
                 if frontmatter(pm).get('parent') == identifier and 'feature-close' in pm.read_text():
                     print('- ATENÇÃO: spec ativa já tem postmortem de fechamento.')
+            spec_text = spec_path(identifier).read_text()
+            section = spec_text.split('## NEEDS_CLARIFICATION', 1)[-1].split('\n## ', 1)[0].splitlines()
+            opened = sum(1 for line in section if line.startswith('- ') and line.strip() not in ('- nenhum', '- none'))
+            print(f"- {identifier}: {len(re.findall(r'^- [*][*]AC-', spec_text, re.M))} ACs · {opened} NEEDS_CLARIFICATION aberta(s)")
+        session_environment()
         if frontmatter(ROOT / '.specs/product/product-spec.md').get('bootstrap') == 'pending':
             print('- BOOTSTRAP PENDENTE: definir produto e stack; tooling não é o produto.')
         if os.environ.get('SDD_ALLOW_TRIVIAL') == '1':
@@ -245,11 +254,64 @@ def session():
         for local in (ROOT / '.claude/settings.local.json', ROOT / '.claude/settings.json'):
             if local.exists() and json.loads(local.read_text()).get('env', {}).get('SDD_ALLOW_TRIVIAL'):
                 print('- ATENÇÃO: escape definido em settings; conferir com o humano.')
+        local = ROOT / '.claude/settings.local.json'
+        if local.exists():
+            keys = [key for key in ('env', 'hooks', 'disableAllHooks', 'permissions') if key in json.loads(local.read_text())]
+            if keys:
+                print(f"- ATENÇÃO: .claude/settings.local.json (fora do Git) define: {', '.join(keys)}. Pode desligar hooks, liberar permissões ou ligar escapes; confira com o humano antes de editar código.")
         drift()
-    except (ValueError, OSError) as exc:
+        session_records()
+    except (ValueError, OSError, subprocess.CalledProcessError) as exc:
         print('- PENDENTE: ' + str(exc))
     print('- Execute make doctor para conferir dependências e instalação. /sdd-status não prova disparo automático dos hooks.')
     print('- No Codex/outros clientes, AGENTS.md e Git continuam válidos; estes hooks são do Claude Code.')
+
+
+def session_environment():
+    """Clone setup, Git surprises and the stage. Fast: no build, service or network here."""
+    inside = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--git-path', 'hooks'], capture_output=True, text=True)
+    missing = []
+    if inside.returncode != 0:
+        missing.append('repositório git')
+    else:
+        hooks = Path(inside.stdout.strip())
+        if not ((hooks if hooks.is_absolute() else ROOT / hooks) / 'commit-msg').exists():
+            missing.append('git hooks')
+        tracked = subprocess.run(['git', '-C', str(ROOT), 'ls-files', '--error-unmatch', 'AGENTS.md'], capture_output=True)
+        if (ROOT / 'AGENTS.md').exists() and tracked.returncode != 0:
+            print('- ÁRVORE FORA DO GIT: o esqueleto ainda não foi commitado. Não commite feature por cima nem limpe a árvore: o commit inicial é do humano.')
+        remotes = subprocess.run(['git', '-C', str(ROOT), 'remote'], capture_output=True, text=True).stdout.split()
+        for name in ('template', 'upstream'):
+            if name in remotes:
+                print(f"- Remoto '{name}': se for a base do template, nunca publique o produto nele; o destino é o origin.")
+    if not (ROOT / '.specs/index.json').exists():
+        missing.append('.specs/index.json')
+    if missing:
+        print(f"- SETUP PENDENTE: falta {', '.join(missing)}. Rode make setup (idempotente e só local).")
+    import harness
+    if harness.stage() == 'desenvolvimento':
+        print('- Estágio: DESENVOLVIMENTO (.claude/deploy-stage.json): o guard Bash não pergunta nada; o irreversível vem negado com o motivo e o resto passa e fica em .sdd/auto-aprovado.log. Trocar o estágio pede o humano.')
+    else:
+        print('- Estágio: beta (padrão): o que o guard não avalia pede o humano.')
+    print('- make check: ' + harness.describe()[0] + '.')
+
+
+def session_records():
+    """Upper documents, applied IaC, the last day of the harness and live counts (never fixed in a document)."""
+    import harness
+    import sync
+    for line in sync.governance_report() + sync.infra_report():
+        print(line)
+    summary = harness.build_report(24)
+    if summary['rodadas']:
+        decisions = summary['por_decisao']
+        print(f"- Harness (24 h): {summary['rodadas']} rodadas, {summary['intervencoes']} intervenções ({decisions.get('deny', 0)} negações, {decisions.get('block', 0)} bloqueios), {summary['insistencia']} insistência(s) — make harness.")
+    specs = ROOT / '.specs'
+    count = lambda folder, pattern: sum(1 for path in (specs / folder).glob(pattern) if '_TEMPLATE' not in path.name and 'ADR-000' not in path.name)
+    print(f"- Contagens: {count('features', 'F-*')} features · {count('components', 'C-*')} componentes · {count('adr', 'ADR-*.md')} ADRs · {count('design-system', 'DS-*.md')} design-system · {count('postmortems', 'PM-*.md')} postmortems")
+    names = sorted(path.stem for path in (specs / 'design-system').glob('DS-*.md'))
+    if names:
+        print(f"- Design System: {' '.join(names)} — leia o aplicável antes de criar módulo, teste, nome ou erro novo.")
 
 
 def stop(payload):
@@ -284,7 +346,7 @@ def has_head():
 
 
 def lint(paths):
-    errors = []
+    errors, warnings = [], []
     for raw in paths:
         path = Path(raw)
         if '_TEMPLATE' in path.parts or path.name in ('_TEMPLATE.md', 'ADR-000-template.md', 'README.md'):
@@ -325,9 +387,13 @@ def lint(paths):
                         target = (ROOT / test).resolve()
                         require(ROOT in target.parents, 'R5 @test fora do projeto')
                         if status == 'approved': require(target.is_file(), f'R5 @test não existe: {test}')
+                section = content.split('## NEEDS_CLARIFICATION', 1)[-1].split('\n## ', 1)[0]
+                needs_open = not all(line.strip() in ('', '- nenhum', '- none') for line in section.splitlines())
                 if status == 'approved':
-                    section = content.split('## NEEDS_CLARIFICATION', 1)[-1].split('\n## ', 1)[0]
-                    require(all(line.strip() in ('', '- nenhum', '- none') for line in section.splitlines()), 'R4 NEEDS_CLARIFICATION aberto')
+                    require(not needs_open, 'R4 NEEDS_CLARIFICATION aberto')
+                elif status == 'in_review' and needs_open:
+                    # Pointed out at every edit, not only at the end: the approval will refuse it.
+                    warnings.append(f'AVISO [R4] {path}: NEEDS_CLARIFICATION aberto numa spec in_review; trate durante a feature')
             if kind == 'design':
                 require(fm.get('applicable') in ('true', 'false'), 'R1 design exige applicable: true|false')
                 require(fm.get('parent', '').startswith(('F-', 'C-')), 'R1 design deve referenciar feature/componente')
@@ -342,6 +408,7 @@ def lint(paths):
         except (ValueError, OSError) as exc:
             errors.append(str(exc))
     if errors: raise ValueError('\n'.join(errors))
+    for warning in warnings: print(warning)
     print('spec-lint: OK')
 
 

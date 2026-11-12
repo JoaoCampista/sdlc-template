@@ -12,6 +12,16 @@ CASES = [
     ('Stop emits text', 'scripts/sdd/sdd.py', "print('{}')", "print('not JSON')", 'test_hooks.Hooks.test_stop_json_drift_and_loop'),
     ('index timestamp', 'scripts/sdd/sdd.py', 'entries = catalog()', "entries = catalog()\n    entries['generated_at'] = __import__('time').time_ns()", 'test_tooling.Tooling.test_index_is_deterministic_and_atomic'),
     ('stage validation removed', 'scripts/sdd/sdd.py', "validate_tree(git('write-tree').decode().strip())", 'pass', 'test_tooling.Tooling.test_commit_validates_staged_content_not_worktree'),
+    ('runner does not log', 'scripts/sdd/harness.py', "        record(name, data.decode", "        (lambda *a: None)(name, data.decode", 'test_harness.Harness.test_runner_same_answer_logs_round_and_fails_closed'),
+    ('stage never denies', '.claude/hooks/guard.py', "    if result.get('hold'):", "    if False:", 'test_harness.Harness.test_stage_decides_what_asked_the_human'),
+    ('subagent edits enforcement', '.claude/hooks/guard.py', "        if agent:\n            return decision('deny', 'Enforcement", "        if False:\n            return decision('deny', 'Enforcement", 'test_team.Team.test_subagent_cannot_edit_enforcement_or_message_others'),
+    ('long run in a pipe', '.claude/hooks/guard.py', "                return decision('deny', LONG_RUN)", "                pass", 'test_harness.Harness.test_long_run_in_a_pipe_needs_tee'),
+    ('governance finding advances mark', '.claude/hooks/team.py', "    if findings:\n        return answer(payload, [f\"DOCUMENTOS", "    if False:\n        return answer(payload, [f\"DOCUMENTOS", 'test_team.Team.test_governance_blocks_stale_upper_documents'),
+    ('role mark on request', '.claude/hooks/team.py', "        if not post:\n            tip = sync.head()\n            if tip:\n                pending.parent.mkdir(parents=True, exist_ok=True)\n                pending.write_text(tip + '\\n')\n            return", "        if not post:\n            tip = sync.head()\n            if tip:\n                sync.role_file(role, 'head').parent.mkdir(parents=True, exist_ok=True)\n                sync.role_file(role, 'head').write_text(tip + '\\n')\n            return", 'test_team.Team.test_role_paths_block_until_the_role_agent_ran'),
+    ('reviewer hard link', '.claude/hooks/team.py', "        if real.is_file() and real.stat().st_nlink > 1:", "        if False:", 'test_team.Team.test_reviewer_writes_only_memory_and_mutation_copy'),
+    ('message guard', '.claude/hooks/team.py', "    if caller(payload) and str(", "    if False and str(", 'test_team.Team.test_subagent_cannot_edit_enforcement_or_message_others'),
+    ('task sync', 'scripts/sdd/sync.py', "            if tasks not in touched:", "            if False:", 'test_team.Team.test_code_that_cites_a_task_goes_up_with_tasks_md'),
+    ('codex ask stays ask', 'scripts/sdd/codex.py', "    if specific['permissionDecision'] == 'ask':", "    if False:", 'test_harness.Harness.test_codex_adapter_translates_and_refuses'),
 ]
 for name, file, before, after, test in CASES:
     with tempfile.TemporaryDirectory(prefix='sdd-mutation-') as temp:

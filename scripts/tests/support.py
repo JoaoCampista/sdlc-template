@@ -43,6 +43,7 @@ class RepoCase(unittest.TestCase):
         shutil.copy(SOURCE / 'scripts/setup.sh', self.root / 'scripts/setup.sh')
         shutil.copy(SOURCE / 'scripts/doctor.sh', self.root / 'scripts/doctor.sh')
         shutil.copy(SOURCE / '.claude/settings.json', self.root / '.claude/settings.json')
+        (self.root / '.claude/harness.json').write_text('{}\n')
         (self.root / '.gitignore').write_text('.sdd/\n__pycache__/\n')
         (self.root / '.specs/features/F-EXAMPLE-V1').mkdir(parents=True)
         (self.root / '.specs/features/F-EXAMPLE-V1/spec.md').write_text(feature())
@@ -82,6 +83,20 @@ class RepoCase(unittest.TestCase):
     def baseline(self):
         self.git('add', '.specs', 'scripts', '.claude', '.gitignore', 'tests')
         self.git('commit', '-qm', 'chore: fixture baseline')
+
+    def commit(self, message, *paths):
+        self.git('add', *paths)
+        self.git('commit', '-qm', message)
+        return self.git('rev-parse', 'HEAD').stdout.strip()
+
+    def stage(self, value='desenvolvimento'):
+        (self.root / '.claude/deploy-stage.json').write_text(json.dumps(dict(stage=value)))
+
+    def harness_config(self, **data):
+        (self.root / '.claude/harness.json').write_text(json.dumps(data))
+
+    def log_rows(self):
+        return [json.loads(line) for path in sorted((self.root / '.sdd/harness').glob('*.jsonl')) for line in path.read_text().splitlines()]
 
     def install(self):
         self.run_script('scripts/sdd/install-git-hooks.sh')

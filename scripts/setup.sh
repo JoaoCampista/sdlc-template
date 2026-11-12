@@ -16,4 +16,6 @@ bash scripts/sdd/spec-index.sh
 bash scripts/sdd/spec-drift.sh
 mkdir -p .sdd
 [ -e .sdd/active-spec ] || : > .sdd/active-spec
+# Clone com histórico e sem marca: nada local está pendente, então as marcas das travas do Stop nascem no HEAD.
+python3 scripts/sdd/sync.py init-marks
 printf '%s\n' 'Setup pronto. Abra a sessão na raiz. Produto → stack por ADR-002 → F-SETUP → features.'
