@@ -25,3 +25,5 @@ last_updated: 2026-11-12
 Validação do integrador em 2026-10-26: make check (24 testes), make test-mutations (4 contraprovas), make doctor e revisão adversarial independente após correções. Smoke automático do Claude e CI remota são limites registrados no postmortem.
 
 Validação do integrador em 2026-11-12 (v0.2.0): make check e make test-mutations executados nesta data, com o resultado no postmortem PM-harness-absorption-2026-11-12. O disparo dos hooks novos no cliente real e o adaptador do Codex no runtime dele são limites registrados lá.
+
+Revisão adversarial de 2026-11-12 sobre c1a9579 (BLOQUEAR: um alto, cinco médios) reabriu T-006, T-007, T-008 e T-009; as correções entraram em 66d4bf1 com teste e contraprova, e as quatro voltaram a done. Detalhe no postmortem.
