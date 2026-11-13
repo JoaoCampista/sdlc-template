@@ -63,11 +63,12 @@ class Hooks(RepoCase):
 
     def test_bash_opaque_destructive_and_bypass(self):
         """AC-4: permissions for unknown effects, no silent bypass."""
-        for command in ('python3 -c "print(1)"', 'bash custom.sh', 'eval echo x', 'docker compose down -v', 'rm data.db', 'git reset --hard', 'echo $(date)', 'psql -c "DROP TABLE users"'):
+        for command in ('python3 -c "print(1)"', 'bash custom.sh', 'eval echo x', 'docker compose down -v', 'rm docs/a.md', 'git reset --hard', 'echo $(date)', 'psql -c "DROP TABLE users"'):
             self.assertEqual(self.action(self.bash(command)), 'ask', command)
         for command in ('git add -f __hook_probe_inexistente__', 'git commit -n -m x', 'git -c core.hooksPath=/tmp commit -m x', 'SDD_ALLOW_TRIVIAL=1 echo x', 'git add -A', 'git commit --no-verify'):
             self.assertEqual(self.action(self.bash(command)), 'deny', command)
         self.assertEqual(self.action(self.bash('echo x > .claude/settings.json')), 'ask')
+        self.assertEqual(self.action(self.bash('rm src/a.py')), 'deny')  # deleting code is writing code
 
     def test_stop_json_drift_and_loop(self):
         """AC-5: exactly one JSON object, never plain text on stdout."""
@@ -99,11 +100,18 @@ class Hooks(RepoCase):
     def test_settings_wiring_and_no_product_configuration(self):
         """AC-8: every event executes the expected script; no copied product permissions."""
         settings = json.loads((SOURCE / '.claude/settings.json').read_text())
-        expected = {'SessionStart': ['session-start.sh'], 'PreToolUse': ['pre-edit-guard.sh', 'bash-guard.sh'], 'PostToolUse': ['post-spec-edit.sh'], 'Stop': ['stop-check.sh']}
+        expected = {'SessionStart': ['session-start.sh'], 'PreToolUse': ['pre-edit-guard.sh', 'reviewer-guard.sh', 'bash-guard.sh', 'role-mark.sh', 'subagent-message-guard.sh'],
+                    'PostToolUse': ['post-spec-edit.sh', 'role-mark.sh'], 'Stop': ['stop-check.sh', 'governance-check.sh', 'role-check.sh', 'infra-check.sh']}
         for event, names in expected.items():
             commands = [hook['command'] for group in settings['hooks'][event] for hook in group['hooks']]
             self.assertEqual(len(commands), len(names))
-            for name in names: self.assertTrue(any('/.claude/hooks/' + name in command for command in commands))
+            for name in names:
+                self.assertTrue(any(f'/.claude/hooks/_run.sh" {name}' in command for command in commands), name)
+                self.assertTrue((SOURCE / '.claude/hooks' / name).is_file(), name)
+        # Ratchet (AC-9): no hook of the settings runs outside the runner that logs the round.
+        for groups in settings['hooks'].values():
+            for group in groups:
+                for hook in group['hooks']: self.assertIn('/.claude/hooks/_run.sh" ', hook['command'])
         for tool in ('Edit', 'Write', 'MultiEdit', 'NotebookEdit'):
             self.assertTrue(re.fullmatch(settings['hooks']['PreToolUse'][0]['matcher'], tool))
         self.assertTrue(re.fullmatch(settings['hooks']['PreToolUse'][1]['matcher'], 'Bash'))
@@ -115,12 +123,12 @@ class Hooks(RepoCase):
         """AC-4 regression: newline commands must be checked like semicolons."""
         for command in ('echo safe\ntouch src/app.py', 'echo safe\ngit commit --no-verify', 'echo safe;\n\ntouch src/app.py'):
             self.assertEqual(self.action(self.bash(command)), 'deny', command)
-        self.assertEqual(self.action(self.bash('echo safe\nrm data.db')), 'ask')
+        self.assertEqual(self.action(self.bash('echo safe\nrm docs/a.md')), 'ask')
         self.assertIsNone(self.action(self.bash('echo "a\nb"')))
 
     def test_multiline_comments_require_review_and_crashes_block(self):
         """AC-3/4: preserve protection when shell comments or hook runtime fail."""
-        for command in ('echo safe # check\ntouch src/a.py', 'echo safe # check\nrm data.db'):
+        for command in ('echo safe # check\ntouch src/a.py', 'echo safe # check\nrm docs/a.md'):
             self.assertEqual(self.action(self.bash(command)), 'ask')
         (self.root / 'cycle').symlink_to(self.root / 'cycle')
         self.assertEqual(self.edit('cycle/a.py', ok=False).returncode, 2)

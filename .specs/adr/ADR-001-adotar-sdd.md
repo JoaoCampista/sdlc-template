@@ -3,14 +3,14 @@ id: ADR-001
 kind: adr
 title: Adotar desenvolvimento dirigido por especificação (SDD) com enforcement por hooks
 parent: PROD-001
-version: 1.1.0
+version: 1.2.0
 status: accepted
 date: 2026-09-05
 deciders: [ceia]
 related: [CONST-001]
 supersedes: []
 amends: []
-last_updated: 2026-10-26
+last_updated: 2026-11-12
 ---
 
 # ADR-001 — Adotar SDD com enforcement por hooks
@@ -42,3 +42,4 @@ pre-commit/pre-push/CI.
 
 ## Revisões
 - 2026-10-26: evolução solicitada pelo mantenedor. Python 3.9+ (biblioteca padrão) passa a ser dependência do tooling, não da stack do produto. Hash e validação usam o snapshot do Git; índice determinístico; guards testados e conservadores. Alternativas: transplantar o guard específico (rejeitado: acoplamento ao produto); manter parsing complexo só em shell (rejeitado: custo de caminhos/JSON). Custo aceito: instalar Python além de Git/jq. Limites e contratos em docs/hooks.md; regressões em scripts/tests/.
+- 2026-11-12: segunda leitura do uso real, pedida pelo mantenedor. O enforcement passa a registrar cada rodada de hook; o Stop também bloqueia documento de cima atrasado, caminho de papel mudado sem o subagente e IaC sem apply; o estágio declarado decide o que pergunta ao humano; subagentes de papel (produto, design, arquiteto, juridico) e adaptador opcional do Codex. Alternativas: copiar os scripts de origem (rejeitado: acoplados à stack e ao ambiente dela); deixar os controles só como texto (rejeitado: contexto não é enforcement). Custo aceito: mais hooks por evento e um arquivo de configuração do projeto (.claude/harness.json), vazio até o esqueleto. Contratos na F-SDD-TOOLING-V1 v0.2.0 (AC-9 a AC-16).

@@ -27,9 +27,10 @@ Para criar um produto, descreva o caso. O fluxo define produto → stack por ADR
 | .specs/adr/ e constitution/ | Decisões e invariantes; stack continua em aberto |
 | .specs/design-system/ | Convenções de engenharia com enforcement; não é biblioteca visual pronta |
 | .specs/postmortems/ | Aprendizados com evidência, spec gap e pendências |
-| .claude/hooks/ | Sessão, guard de edição, guard Bash, pós-edição e Stop |
-| .claude/rules/, skills/, agents/ | Regras por caminho, comandos de trabalho e revisor somente leitura |
-| scripts/sdd/ | Índice determinístico, lint, drift e Git hooks que conferem stage/revisão enviada |
+| .claude/hooks/ | Runner com registro de cada rodada, sessão, guards de edição e Bash, pós-edição, travas do Stop (drift, governança, papéis, infra) e guards de subagente |
+| .claude/harness.json | O que é do projeto: caminhos de cada papel, raízes de IaC, travas da junção (vazio até o esqueleto) |
+| .claude/rules/, skills/, agents/ | Regras por caminho, comandos de trabalho, os papéis (produto, design, arquiteto, juridico) e o revisor somente leitura |
+| scripts/sdd/ | Índice determinístico, lint, drift, Git hooks que conferem stage/revisão enviada e tasks, relatório do harness, veredito do check, adaptador do Codex |
 | scripts/tests/ | Regressões herméticas com repositórios temporários |
 | docs/templates/ | Handoff e relatório de revisão reutilizáveis |
 
@@ -51,7 +52,9 @@ Os hooks automáticos são configurados para Claude Code. Codex e outros cliente
 
 - [Adoção e atualização de projetos existentes](docs/adoption.md)
 - [Práticas encontradas: origem, generalização e limites](docs/learned-practices.md)
-- [Hooks: cobertura, teste de disparo e limitações](docs/hooks.md)
+- [Hooks: cobertura, configuração, teste de disparo e limitações](docs/hooks.md)
+- [O time: papéis, subagentes e auditor](docs/team.md)
+- [Time paralelo: pedido de uma frente e riscos](docs/parallel-team.md)
 - [Design, estados e evidências](docs/design.md)
 - [Padrões opcionais por tipo de projeto](docs/optional-patterns.md)
 

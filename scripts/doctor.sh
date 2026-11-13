@@ -15,5 +15,6 @@ hooks=$(git rev-parse --git-path hooks)
 for hook in pre-commit prepare-commit-msg commit-msg pre-push; do
   [ -x "$hooks/$hook" ] && grep -q 'sdd-template managed hook' "$hooks/$hook" || { echo "Hook ausente/desatualizado: $hook" >&2; exit 1; }
 done
+python3 -c 'import json,sys; sys.path.insert(0, "scripts/sdd"); import harness; harness.config(); print("estágio:", harness.stage())'
 bash scripts/sdd/spec-drift.sh
 printf '%s\n' 'doctor: OK. Verifique o disparo na sessão real do cliente; este comando só confere instalação.'

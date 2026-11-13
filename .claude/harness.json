@@ -1,0 +1,36 @@
+{
+  "roles": {
+    "arquiteto": {
+      "paths": [],
+      "pedido": "atualizar os diagramas de arquitetura e relatar as divergências entre o código e os documentos"
+    },
+    "design": {
+      "paths": [],
+      "pedido": "conferir a referência visual e o design.md contra a tela que mudou e atualizar o que divergir"
+    }
+  },
+  "infra_roots": [],
+  "fences": [
+    {
+      "name": "hooks",
+      "run": ["python3", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_hooks.py"],
+      "paths": [".claude", "scripts/sdd", "scripts/tests"]
+    },
+    {
+      "name": "tooling",
+      "run": ["python3", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_tooling.py"],
+      "paths": ["scripts", ".specs", "Makefile"]
+    },
+    {
+      "name": "harness",
+      "run": ["python3", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_harness.py"],
+      "paths": [".claude", "scripts/sdd", "scripts/tests", "Makefile"]
+    },
+    {
+      "name": "team",
+      "run": ["python3", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_team.py"],
+      "paths": [".claude", "scripts/sdd", "scripts/tests"]
+    }
+  ],
+  "long_runs": ["check", "test", "test-integration", "test-mutations"]
+}

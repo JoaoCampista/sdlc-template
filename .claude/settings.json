@@ -6,9 +6,19 @@
       "Bash(git log *)",
       "Bash(git show *)",
       "Bash(git rev-parse *)",
+      "Bash(git grep *)",
       "Bash(bash scripts/setup.sh)",
       "Bash(bash scripts/doctor.sh)",
-      "Bash(bash scripts/sdd/*)"
+      "Bash(bash scripts/sdd/*)",
+      "Bash(make setup)",
+      "Bash(make doctor)",
+      "Bash(make sdd)",
+      "Bash(make lint)",
+      "Bash(make check)",
+      "Bash(make check-verdict)",
+      "Bash(make harness*)",
+      "Bash(make painel)",
+      "Bash(make junction-check*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -16,8 +26,22 @@
       "Read(./**/*.pem)",
       "Bash(git commit --no-verify*)",
       "Bash(git commit * --no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git commit * -n *)",
+      "Bash(git commit * -n)",
       "Bash(git add -A*)",
-      "Bash(git add --all*)"
+      "Bash(git add --all*)",
+      "Bash(git add .)",
+      "Bash(git add . *)",
+      "Bash(git add -u*)",
+      "Bash(git add -- .)",
+      "Bash(git add :/*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git reset * --hard*)"
     ]
   },
   "hooks": {
@@ -26,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" session-start.sh"
           }
         ]
       }
@@ -37,7 +61,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-edit-guard.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" pre-edit-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" reviewer-guard.sh settings || exit 2",
+            "timeout": 30
           }
         ]
       },
@@ -46,7 +75,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-guard.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" bash-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^(Agent|Task|SendMessage)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" role-mark.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^SendMessage$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" subagent-message-guard.sh"
           }
         ]
       }
@@ -57,7 +104,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-spec-edit.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" post-spec-edit.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^(Agent|Task|SendMessage)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" role-mark.sh"
           }
         ]
       }
@@ -67,7 +123,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-check.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" stop-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" governance-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" role-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/_run.sh\" infra-check.sh"
           }
         ]
       }
