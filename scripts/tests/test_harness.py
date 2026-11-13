@@ -27,6 +27,11 @@ class Harness(RepoCase):
         row = rows[0]
         self.assertEqual((row['hook'], row['decisao'], row['alvo'], row['quem'], row['sessao'], row['rc']), ('pre-edit-guard', 'deny', 'src/app.py', 'principal', 's1', 0))
         self.assertIn('spec', row['motivo'].lower())
+        # Another name of the same folder (as /var and /private/var on macOS) still logs the path relative to the root.
+        alias = self.root.parent / 'alias'
+        alias.symlink_to(self.root)
+        self.run_hook('pre-edit-guard.sh', dict(payload, tool_input=dict(file_path=str(alias / 'docs/a.md'))))
+        self.assertEqual(self.log_rows()[-1]['alvo'], 'docs/a.md')
         self.bash(f'echo {secret} > docs/a.md')
         raw = ''.join(path.read_text() for path in (self.root / '.sdd/harness').glob('*.jsonl'))
         self.assertNotIn(secret, raw)

@@ -117,8 +117,13 @@ def record(name, data, out, err, code, elapsed, auto):
     tool_input = payload.get('tool_input') if isinstance(payload.get('tool_input'), dict) else {}
     target = next((tool_input[key] for key in ('file_path', 'notebook_path', 'subagent_type', 'to') if isinstance(tool_input.get(key), str)), None)
     if target is not None:
-        prefix = str(ROOT) + '/'
-        target = mask(target[len(prefix):] if target.startswith(prefix) else target)
+        if target.startswith('/'):
+            # By the real path: the same folder can have another name (/var and /private/var on macOS).
+            try:
+                target = Path(target).resolve().relative_to(ROOT).as_posix()
+            except (ValueError, OSError):
+                pass
+        target = mask(target)
     if permission:
         verdict = permission
     elif answer.get('decision') == 'block':
